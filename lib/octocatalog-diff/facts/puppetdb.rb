@@ -12,8 +12,7 @@ module OctocatalogDiff
       # Supporting multiple versions of the PuppetDB API.
       PUPPETDB_QUERY_FACTS_URL = {
         '3' => '/v3/nodes/<NODE>/facts',
-        '4.0' => '/v4/nodes/<NODE>/facts',
-        '4' => '/pdb/query/v4/nodes/<NODE>/facts',
+        '4' => '/v4/nodes/<NODE>/facts',
       }.freeze
 
       # Retrieve facts from PuppetDB for a specified node.
