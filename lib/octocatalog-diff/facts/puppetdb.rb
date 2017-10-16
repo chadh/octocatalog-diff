@@ -12,6 +12,7 @@ module OctocatalogDiff
       # Supporting multiple versions of the PuppetDB API.
       PUPPETDB_QUERY_FACTS_URL = {
         '3' => '/v3/nodes/<NODE>/facts',
+        '4.0' => '/v4/nodes/<NODE>/facts'
         '4' => '/pdb/query/v4/nodes/<NODE>/facts'
       }.freeze
 
@@ -40,7 +41,13 @@ module OctocatalogDiff
           begin
             result = puppetdb.get(uri)
             facts = {}
-            result.map { |x| facts[x['name']] = x['value'] }
+            result.map { |x|
+              if x['name'] == 'trusted'
+                next
+              end
+              facts[x['name']] = x['value']
+            }
+
             if facts.empty?
               message = "Unable to retrieve facts for node #{node} from PuppetDB (empty or nil)!"
               raise OctocatalogDiff::Errors::FactRetrievalError, message

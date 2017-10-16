@@ -52,7 +52,7 @@ module OctocatalogDiff
 
         # These configurations are optional. Don't call the methods if parameters are nil.
         unless options[:puppetdb_url].nil?
-          install_puppetdb_conf(logger, options[:puppetdb_url], options[:puppetdb_server_url_timeout])
+          install_puppetdb_conf(logger, options[:puppetdb_host], options[:puppetdb_port])
           install_routes_yaml(logger)
         end
         install_hiera_config(logger, options) unless options[:hiera_config].nil?
@@ -98,23 +98,27 @@ module OctocatalogDiff
       end
 
       # Install puppetdb.conf file in temporary directory
-      # @param server_urls [String] String for server_urls in puppetdb.conf
+      # @param server [String] PuppetDB server name
+      # @param port [Integer] PuppetDB port
       # @param server_url_timeout [Integer] Value for server_url_timeout in puppetdb.conf
-      def install_puppetdb_conf(logger, server_urls, server_url_timeout = 30)
-        unless server_urls.is_a?(String)
-          raise ArgumentError, "server_urls must be a string, got a: #{server_urls.class}"
+      def install_puppetdb_conf(logger, server, port = 8081)
+        unless server.is_a?(String)
+          raise ArgumentError, "server must be a string, got a: #{server.class}"
         end
 
-        server_url_timeout ||= 30 # If called with nil argument, supply default
-        unless server_url_timeout.is_a?(Integer)
-          raise ArgumentError, "server_url_timeout must be a fixnum, got a: #{server_url_timeout.class}"
+        server_url_timeout ||= 8081 # If called with nil argument, supply default
+        unless port.is_a?(Integer)
+          raise ArgumentError, "port must be a fixnum, got a: #{port.class}"
         end
 
         puppetdb_conf = File.join(@tempdir, 'puppetdb.conf')
         File.open(puppetdb_conf, 'w') do |f|
           f.write "[main]\n"
-          f.write "server_urls = #{server_urls}\n"
-          f.write "server_url_timeout = #{server_url_timeout}\n"
+          # PuppetDB 2.3 and earlier need a different config.  hacking in
+          f.write "server = #{server}\n"
+          f.write "port = #{port}\n"
+          # f.write "server_urls = #{server_urls}\n"
+          # f.write "server_url_timeout = #{server_url_timeout}\n"
         end
         logger.debug("Installed puppetdb.conf file at #{puppetdb_conf}")
       end
